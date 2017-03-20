@@ -1,0 +1,83 @@
+---
+title: "Sample Exercise on Brownian Motion"
+author: "Carrie Tribble and Jenna Baughman"
+date: "March 20, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Part 1: Brownian motion of a trait over time, following a single lineage
+
+First, we need to initialize our simulations by setting the length of time for the simulation (t). This can also be thought of as the number of generations. 
+```{r}
+
+t <- 0:100  
+```
+    
+Next, let's initialize the instantaneous rate of change. This determines the relative size of jumps that tend to occur. when sig2 (sigma squared) is small, character state changes tend to be smaller. when its big (maximum of 1), individual state changes tend to be larger.
+```{r}
+sig2 <- 0.01 
+```
+    
+Now, simulate a set of random deviates. In other words, this is the series of character state changes through time (t). Look at the values of x to get an idea of this. 
+```{r}
+x <- rnorm(n = length(t) - 1, sd = sqrt(sig2))
+x
+```
+The character state starts at 0 then changes by the amount (x). Imagine this a size of some trait, like leaf length. when x is negative, it means it got smaller, and when positive, it got bigger.
+    
+Now compute their cumulative sum. We want cumulative sum because the state a character is in at any time (t) is the sum of all its past transitions. ie, it started at "0", got bigger by this much, smaller by that much, bigger again, etc. you add those all up to see the state at the end! 
+```{r}
+x <- c(0, cumsum(x))
+plot(t, x, type = "l", ylim = c(-2, 2))
+```
+    
+
+Repeat these simulations several times. Then, repeat some more, changing t and sig2, one at a time. Answer the following questions, and include your changed code in a code block below.  
+
+1) How does the size of t affect how close the final character state (phenotype) is to the initial character state (which is always 0)? 
+
+2) How does the size of sig2 affect how close the final character state (phenotype) is to the initial character state? 
+
+# Part 2: Brownian motion of a trait over time, following multiple single lineages
+    
+Notice that this block of code does the same thing we did before but plotting several independent lineages all at once. 
+```{r}
+t <- 0:100
+sig2 <- 0.01
+nsim <- 100
+X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
+X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
+plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
+apply(X[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
+```
+
+Try a couple of times, again changing sig2 and t. You might need to change the y axis to fit your character state range! (change the numbers in 'ylim = c(-2, 2)' to whatever you want. Include your changed code in a code block below. 
+
+3) How does this simulation exercise affect your answers to questions 1 and 2, above? Which simulation is more effective at demonstrating the effects of sig2 and t? Why?
+    
+-----------------------------
+    
+carrie: below is from phytools.org. the first part is just changing sig2 but i already included that! look through it to see what you wanna use. i think it would be good to get this formatted in an juppyter or markdown notebook!   
+    
+```{r}
+X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2/10)), nsim, length(t) - 1)
+X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
+plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
+apply(X[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
+
+X <- matrix(0, nsim, length(t))
+for (i in 1:nsim) X[i, ] <- c(0, cumsum(rnorm(n = length(t) - 1, sd = sqrt(sig2))))
+plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
+for (i in 1:nsim) lines(t, X[i, ])
+
+nsim <- 10000
+X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
+X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
+v <- apply(X, 2, var)
+plot(t, v, type = "l", xlab = "time", ylab = "variance among simulations")
+```
+
