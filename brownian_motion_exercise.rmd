@@ -6,14 +6,13 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 # Part 1: Brownian motion of a trait over time, following a single lineage
 
 First, we need to initialize our simulations by setting the length of time for the simulation (t). This can also be thought of as the number of generations. 
 ```{r}
-
 t <- 0:100  
 ```
     
@@ -29,22 +28,52 @@ x
 ```
 The character state starts at 0 then changes by the amount (x). Imagine this a size of some trait, like leaf length. when x is negative, it means it got smaller, and when positive, it got bigger.
     
-Now compute their cumulative sum. We want cumulative sum because the state a character is in at any time (t) is the sum of all its past transitions. ie, it started at "0", got bigger by this much, smaller by that much, bigger again, etc. you add those all up to see the state at the end! 
+    Now compute their cumulative sum. We want cumulative sum because the state a character is in at any time (t) is the sum of all its past transitions. In other words, it started at "0", got bigger by this much, smaller by that much, bigger again, etc. You add those all up to see the state at the end! If we plot all of the cumulative sums over the values of t, we can track the changes in the trait over time.  
+    We can build up to this by starting to generate a line of trait change over time. Run these lines of code one at a time (not as a whole block). Each point represents the value of the trait at a new point in time. 
+    
+```{r}
+stepwise_values <- numeric()
+
+stepwise_values[1] <- 0
+plot(1, stepwise_values[1], 
+     xlim = c(0,5), ylim = c(-0.5,0.5), 
+     xlab = "t", ylab = "trait value", 
+     pch = 20, type = "o")
+
+stepwise_values[2] <- stepwise_values[1] + x[1]
+points(2, stepwise_values[2], pch = 20)
+
+stepwise_values[3] <- stepwise_values[2] + x[2]
+points(3, stepwise_values[3], pch = 20)
+
+stepwise_values[4] <- stepwise_values[3] + x[3]
+points(4, stepwise_values[4], pch = 20)
+
+stepwise_values[5] <- stepwise_values[4] + x[4]
+points(5, stepwise_values[5], pch = 20)
+
+lines(1:5, stepwise_values)
+
+```
+
+We can do this for all of our values of X using the cumsum() function.
 ```{r}
 x <- c(0, cumsum(x))
 plot(t, x, type = "l", ylim = c(-2, 2))
 ```
     
 
-Repeat these simulations several times. Then, repeat some more, changing t and sig2, one at a time. Answer the following questions, and include your changed code in a code block below.  
+Repeat these simulations several times by rerunning the previous two code blocks. Then, repeat some more, changing the values of t and sig2, one at a time. Answer the following questions, and include your changed code in a code block below.  
 
-1) How does the size of t affect how close the final character state (phenotype) is to the initial character state (which is always 0)? 
+**1) How does the size of t affect how close the final character state (phenotype) is to the initial character state (which is always 0)?**
 
-2) How does the size of sig2 affect how close the final character state (phenotype) is to the initial character state? 
+**2) How does the size of sig2 affect how close the final character state (phenotype) is to the initial character state?**
+
+-----------------------------
 
 # Part 2: Brownian motion of a trait over time, following multiple single lineages
     
-Notice that this block of code does the same thing we did before but plotting several independent lineages all at once. 
+Notice that this block of code does the same thing we did before but plotting several independent lineages all at once. We will 
 ```{r}
 t <- 0:100
 sig2 <- 0.01
@@ -53,27 +82,19 @@ X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) 
 X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
 plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
 apply(X[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
+lines(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), col = "red")
 ```
 
 Try a couple of times, again changing sig2 and t. You might need to change the y axis to fit your character state range! (change the numbers in 'ylim = c(-2, 2)' to whatever you want. Include your changed code in a code block below. 
 
-3) How does this simulation exercise affect your answers to questions 1 and 2, above? Which simulation is more effective at demonstrating the effects of sig2 and t? Why?
+**3) How does this simulation exercise affect your answers to questions 1 and 2, above? Which simulation (part 1 or part 2) is more effective at demonstrating the effects of sig2 and t? Why?**
     
 -----------------------------
     
 carrie: below is from phytools.org. the first part is just changing sig2 but i already included that! look through it to see what you wanna use. i think it would be good to get this formatted in an juppyter or markdown notebook!   
+
     
 ```{r}
-X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2/10)), nsim, length(t) - 1)
-X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
-plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
-apply(X[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
-
-X <- matrix(0, nsim, length(t))
-for (i in 1:nsim) X[i, ] <- c(0, cumsum(rnorm(n = length(t) - 1, sd = sqrt(sig2))))
-plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
-for (i in 1:nsim) lines(t, X[i, ])
-
 nsim <- 10000
 X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
 X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))

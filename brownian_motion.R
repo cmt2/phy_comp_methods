@@ -4,7 +4,7 @@ library(phytools)
 
 #### part 1: brownian motion of a trait over time, following a single lineage
 
-t <- 0:100  # length of time for simulation.Can be though of as generations.
+t <- 0:100  # length of time for simulation. Can be thought of as generations.
 sig2 <- 0.01 # this is the instantaneous rate of change. This determines the relative size of jumps that tend to occur. when sig2 (sigma squared) is small, character state changes tend to be smaller. when its big (maximum of 1), individual state changes tend to be larger.
 ## first, simulate a set of random deviates. in other words, this is the series of character state changes through time (t)
 x <- rnorm(n = length(t) - 1, sd = sqrt(sig2))
