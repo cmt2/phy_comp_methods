@@ -29,32 +29,37 @@ x
 The character state starts at 0 then changes by the amount (x). Imagine this a size of some trait, like leaf length. when x is negative, it means it got smaller, and when positive, it got bigger.
     
     Now compute their cumulative sum. We want cumulative sum because the state a character is in at any time (t) is the sum of all its past transitions. In other words, it started at "0", got bigger by this much, smaller by that much, bigger again, etc. You add those all up to see the state at the end! If we plot all of the cumulative sums over the values of t, we can track the changes in the trait over time.  
-    We can build up to this by starting to generate a line of trait change over time. Run these lines of code one at a time (not as a whole block). Each point represents the value of the trait at a new point in time. 
-    
+    We can build up to this by starting to generate trait values over time. Each trait value at time t is calculated by adding a change in trait value given in the X vector to the trait value at t-1. 
 ```{r}
 stepwise_values <- numeric()
 
 stepwise_values[1] <- 0
+stepwise_values[2] <- stepwise_values[1] + x[1]
+stepwise_values[3] <- stepwise_values[2] + x[2]
+stepwise_values[4] <- stepwise_values[3] + x[3]
+stepwise_values[5] <- stepwise_values[4] + x[4]
+```
+
+Now that we've generated the trait values for the first 5 points in time, we can plot those points to see how the trait values vary as time progresses. Run these lines of code individually rather than as a whole code block.
+```{r}
+abs_max <- max(abs(stepwise_values))
+
 plot(1, stepwise_values[1], 
-     xlim = c(0,5), ylim = c(-0.5,0.5), 
+     xlim = c(0,5), ylim = c(-abs_max,abs_max), 
      xlab = "t", ylab = "trait value", 
      pch = 20, type = "o")
 
-stepwise_values[2] <- stepwise_values[1] + x[1]
 points(2, stepwise_values[2], pch = 20)
 
-stepwise_values[3] <- stepwise_values[2] + x[2]
 points(3, stepwise_values[3], pch = 20)
 
-stepwise_values[4] <- stepwise_values[3] + x[3]
 points(4, stepwise_values[4], pch = 20)
 
-stepwise_values[5] <- stepwise_values[4] + x[4]
 points(5, stepwise_values[5], pch = 20)
 
 lines(1:5, stepwise_values)
-
 ```
+
 
 We can do this for all of our values of X using the cumsum() function.
 ```{r}
@@ -73,27 +78,53 @@ Repeat these simulations several times by rerunning the previous two code blocks
 
 # Part 2: Brownian motion of a trait over time, following multiple single lineages
     
-Notice that this block of code does the same thing we did before but plotting several independent lineages all at once. We will 
+Notice that this block of code does the same thing we did before but plotting several independent lineages all at once. We generate a matrix of simulations, with each simulation as a row and each unit time (t) as a column. 
 ```{r}
 t <- 0:100
 sig2 <- 0.01
 nsim <- 100
-X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
-X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
-plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
-apply(X[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
-lines(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), col = "red")
-```
 
+X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
+sim_matrix <- cbind(rep(0, nsim), t(apply(X, 1, cumsum))) #matrix of simulations
+```
+    
+Plot the first simulation.
+```{r}
+plot(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
+```
+    
+Plot all of the simulations, with the first simulation in red. 
+```{r}
+apply(sim_matrix[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
+lines(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), col = "red")
+```
+    
 Try a couple of times, again changing sig2 and t. You might need to change the y axis to fit your character state range! (change the numbers in 'ylim = c(-2, 2)' to whatever you want. Include your changed code in a code block below. 
 
 **3) How does this simulation exercise affect your answers to questions 1 and 2, above? Which simulation (part 1 or part 2) is more effective at demonstrating the effects of sig2 and t? Why?**
     
 -----------------------------
     
-carrie: below is from phytools.org. the first part is just changing sig2 but i already included that! look through it to see what you wanna use. i think it would be good to get this formatted in an juppyter or markdown notebook!   
-
+# Part 3: Making the connection to phylogenies. 
     
+How does all of this connect to Brownian motion in the context of phylogenetics? We are never given the full distribution of thousands of Brownian motion simulations. Instead, we are given a couple of trait values in the present, and are often interested in reconstruction the ancestral value - the start point of the simulation. Here's a visualization of that. 
+```{r}
+plot(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", 
+     ylim = c(-2, 2), type = "l", col = "grey")
+apply(sim_matrix[2:nsim, ], 1, function(x, t) lines(t, x, col = "grey"), t = t)
+points(0,0, col = "blue", pch = 20)
+text(10,.5, "Ancestral \nValue", col = "blue")
+points(x = rep(100, times = 5), 
+       y = X[c(1:5),100],
+       col = "red", pch = 20)
+text(90, 1, "Extant\nTrait\nValues", col = "red")
+```
+Notice that the extant trait values are probably clustered near 0. This is stochastic - while extant trait values at the extremes, closer to |2|, are possible, they are far less likely than values closer to 0. Some of you may see more extreme values, while others will see values that are closer together. 
+    
+So, how does Brownian motion help us understand trait evolution? How can we calculate the ancestral value given the extant trait values? First, let's be sure we understand the statistical properties of the simulations we have been running. 
+
+# Jenna !!
+I am going to add in here the graph we talked about - with the expected trait value and the variances through time. Could you check that I'm not saying anything wrong? 
 ```{r}
 nsim <- 10000
 X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
@@ -101,4 +132,7 @@ X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
 v <- apply(X, 2, var)
 plot(t, v, type = "l", xlab = "time", ylab = "variance among simulations")
 ```
+carrie: below is from phytools.org. the first part is just changing sig2 but i already included that! look through it to see what you wanna use. i think it would be good to get this formatted in an juppyter or markdown notebook!   
+
+
 
