@@ -31,7 +31,14 @@ X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
 plot(t, X[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
 apply(X[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
 
-#You should have seen that this block of code does thes same thing we did before but plotting several independent lineages all at once. Try 
+#You should have seen that this block of code does thes same thing we did before but plotting several independent lineages all at once. Try a couple of times, again changing sig2 and t. You might need to change the y axis to fit your character state range! (change the numbers in 'ylim = c(-2, 2)' to whatever you want. 
+
+#3) How does this simulation exercise affect your answers to questions 1 and 2, above? Which simulation is more effective at demonstrating the effects of sig2 and t? Why?
+
+
+
+
+#carrie: below is from phytools.org. the first part is just changing sig2 but i already included that! look through it to see what you wanna use. i think it would be good to get this formatted in an juppyter or markdown notebook!   
 
 
 
