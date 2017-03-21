@@ -88,13 +88,10 @@ X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) 
 sim_matrix <- cbind(rep(0, nsim), t(apply(X, 1, cumsum))) #matrix of simulations
 ```
     
-Plot the first simulation.
+Plot the first simulation, then plot all of the simulations, with the first simulation in red.
 ```{r}
 plot(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), type = "l")
-```
-    
-Plot all of the simulations, with the first simulation in red. 
-```{r}
+
 apply(sim_matrix[2:nsim, ], 1, function(x, t) lines(t, x), t = t)
 lines(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", ylim = c(-2, 2), col = "red")
 ```
@@ -115,24 +112,57 @@ apply(sim_matrix[2:nsim, ], 1, function(x, t) lines(t, x, col = "grey"), t = t)
 points(0,0, col = "blue", pch = 20)
 text(10,.5, "Ancestral \nValue", col = "blue")
 points(x = rep(100, times = 5), 
-       y = X[c(1:5),100],
+       y = sim_matrix[c(1:5),100],
        col = "red", pch = 20)
-text(90, 1, "Extant\nTrait\nValues", col = "red")
+text(90, mean(sim_matrix[c(1:5),100]), "Extant\nTrait\nValues", col = "red")
 ```
-Notice that the extant trait values are probably clustered near 0. This is stochastic - while extant trait values at the extremes, closer to |2|, are possible, they are far less likely than values closer to 0. Some of you may see more extreme values, while others will see values that are closer together. 
     
-So, how does Brownian motion help us understand trait evolution? How can we calculate the ancestral value given the extant trait values? First, let's be sure we understand the statistical properties of the simulations we have been running. 
-
-# Jenna !!
-I am going to add in here the graph we talked about - with the expected trait value and the variances through time. Could you check that I'm not saying anything wrong? 
+So, how does Brownian motion help us understand trait evolution? How can we calculate the ancestral value given the extant trait values? Answer the following questions. 
+    
+**4) Here's another simulation under Brownian motion. Add to this plot below 4 additional features:**
+    * A horizontal line (in blue) showing the expected value for this Brownian motion simulation.
+    * 3 verticle lines (in red) illustrating the variance of the distribution at t = 20, t = 60, and t = 100. For example, in the plot below, I've included the variance of the distribution at t = 10. Add on the additional lines to this plot. 
 ```{r}
 nsim <- 10000
 X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
-X <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
-v <- apply(X, 2, var)
+sim_matrix <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
+plot(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", 
+     ylim = c(-5, 5), type = "l", col = "grey")
+apply(sim_matrix[2:nsim, ], 1, function(x, t) lines(t, x, col = "grey"), t = t)
+segments(x0 = 10, y0 = min(sim_matrix[,10]), y1 = max(sim_matrix[,10]), col = "red" )
+```
+    
+*Sample answer*
+```{r}
+nsim <- 10000
+X <- matrix(rnorm(n = nsim * (length(t) - 1), sd = sqrt(sig2)), nsim, length(t) - 1)
+sim_matrix <- cbind(rep(0, nsim), t(apply(X, 1, cumsum)))
+plot(t, sim_matrix[1, ], xlab = "time", ylab = "phenotype", 
+     ylim = c(-5, 5), type = "l", col = "grey")
+apply(sim_matrix[2:nsim, ], 1, function(x, t) lines(t, x, col = "grey"), t = t)
+abline(h = 0, col = "blue")
+segments(x0 = c(10, 20, 60, 100), y0 = c(min(sim_matrix[,10]), 
+                                         min(sim_matrix[,20]),
+                                         min(sim_matrix[,60]),
+                                         min(sim_matrix[,100])),
+                                  y1 = c(max(sim_matrix[,10]), 
+                                         max(sim_matrix[,20]),
+                                         max(sim_matrix[,60]),
+                                         max(sim_matrix[,100]))
+         , col = "red" )
+```
+    
+**5) Describe in words what you observe happening to the variance of the distribution at higher values of t.**
+
+**6) What does the expectation of the distribution relate to in terms of phylogenetic comparative methods?**
+
+Here's a graphical illustration of the relationship between t and the variance among simulations. Does this change your interpretation above? If so, why? 
+```{r}
+v <- apply(sim_matrix, 2, var)
 plot(t, v, type = "l", xlab = "time", ylab = "variance among simulations")
 ```
-carrie: below is from phytools.org. the first part is just changing sig2 but i already included that! look through it to see what you wanna use. i think it would be good to get this formatted in an juppyter or markdown notebook!   
+    
+**7) In these simulations, we have discussed the relationships between time, trait values/ phenotype, and variance among simulations. For each of these 3 terms, describe how they would relate to a phylogenetic ancestral state reconstruction of a quantitative trait such as leaf size.**
 
 
 
